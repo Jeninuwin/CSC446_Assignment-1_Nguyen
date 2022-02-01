@@ -20,7 +20,11 @@ namespace CSC446_Assignment_1_Nguyen
             commat,
             closeParent,
             openParent,
-            period
+            period,
+            openCurlyParent,
+            closeCurlyParent,
+            openSquareParent,
+            closeSquareParent
         }
         static Symbols Token;
         static string Lexeme;
@@ -104,7 +108,13 @@ namespace CSC446_Assignment_1_Nguyen
             }
             else
             {
-                //ProcessSingleToken();
+                ProcessSingleToken();
+            }
+
+            if(Lexeme.Length > 27)
+            {
+                Console.WriteLine("Invalid Token. The Length cannot be more than 27");
+                Token = Symbols.unknownt;
             }
         }
 
@@ -247,6 +257,15 @@ namespace CSC446_Assignment_1_Nguyen
                     break;
                 }
             }
+            if (!hasEnding)
+            {
+                Token = Symbols.unknownt;
+                Console.WriteLine("ERROR LINE " + LineNo + ": incomplete literal, missing closing");
+            }
+            else
+            {
+                Token = Symbols.literal;
+            }
         }
 
         public static int? Value { get; set; } = null; //this resets the value not sure if this is needed but can remove?
@@ -280,33 +299,83 @@ namespace CSC446_Assignment_1_Nguyen
 
         static void ProcessSingleToken()
         {
-            // { } [] 
+            
             if (Lexeme[0] == '<' || Lexeme[0] == '>' || Lexeme[0] == '=')
-                Token = Symbols.relopt;
-            else if (Lexeme[0] == '.')
-                Token = Symbols.period;
-            else if (Lexeme[0] == '(')
-                Token = Symbols.openParent;
-            else if (Lexeme[0] == ')')
-                Token = Symbols.closeParent;
-            else if (Lexeme[0] == '{')
             {
+                Token = Symbols.relopt;
 
             }
+            else if (Lexeme[0] == '.')
+            {
+                Token = Symbols.period;
+
+            }
+            else if (Lexeme[0] == '(')
+            {
+                Token = Symbols.openParent;
+
+            }
+            else if (Lexeme[0] == ')')
+            {
+                Token = Symbols.closeParent;
+
+            }
+            else if (Lexeme[0] == '{')
+            {
+                Token = Symbols.openCurlyParent;
+            }
+            else if(Lexeme[0] == '}')
+            {
+                Token = Symbols.closeCurlyParent;
+            }
+            else if(Lexeme[0] == '[')
+            {
+                Token = Symbols.openSquareParent;
+            }
+            else if(Lexeme[0] == ']')
+            {
+                Token = Symbols.closeSquareParent;
+            }
             else if (Lexeme[0] == ',')
+            {
                 Token = Symbols.commat;
+
+            }
             else if (Lexeme[0] == '+')
+            {
                 Token = Symbols.addopt;
+
+            }
             else if (Lexeme[0] == '-')
+            {
                 Token = Symbols.addopt;
+
+            }
             else if (Lexeme[0] == ':')
+            {
                 Token = Symbols.colont;
+
+            }
             else if (Lexeme[0] == ';')
+            {
                 Token = Symbols.semit;
+
+            }
             else if (Lexeme[0] == '"')
+            {
                 Token = Symbols.quotet;
+
+            }
             else
+            {
                 Token = Symbols.unknownt;
+
+            }
+        }
+
+        static void ProcessDoubleToken()
+        {
+
         }
     }
     //class Program
