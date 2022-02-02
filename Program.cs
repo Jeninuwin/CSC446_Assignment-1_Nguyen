@@ -24,12 +24,13 @@ namespace CSC446_Assignment_1_Nguyen
             openCurlyParent,
             closeCurlyParent,
             openSquareParent,
-            closeSquareParent
+            closeSquareParent,
+            numt
         }
         static Symbols Token;
         static string Lexeme;
         static int LineNo;
-       // static int Value; //integer 
+        // static int Value; //integer 
         static double ValueR; //real
         static string ValueL;
 
@@ -89,20 +90,21 @@ namespace CSC446_Assignment_1_Nguyen
             {
                 ProcessNumToken();
             }
-            else if(Lexeme[0] >= '/')
+            else if (Lexeme[0] == '/')
             {
-                //ProcessCommentToken();
+                ProcessCommentToken();
+                GetNextToken();
             }
             else if (Lexeme[0] == '"')
             {
                 ProcessLiteralToken();
 
             }
-            else if(Lexeme[0] == '<' || Lexeme[0] == '>' || Lexeme[0] == ':')
+            else if (Lexeme[0] == '<' || Lexeme[0] == '>' || Lexeme[0] == ':')
             {
                 //ProcessDoubleToken();
             }
-            else if(Lexeme[0] == ' ' || Lexeme[0] == '\r' || Lexeme[0] == '\n' || Lexeme[0] == '\t')
+            else if (Lexeme[0] == ' ' || Lexeme[0] == '\r' || Lexeme[0] == '\t' || Lexeme[0] == '\n')
             {
                 Token = Symbols.whitespace;
             }
@@ -111,18 +113,32 @@ namespace CSC446_Assignment_1_Nguyen
                 ProcessSingleToken();
             }
 
-            if(Lexeme.Length > 27)
+            if (Lexeme.Length > 27)
             {
                 Console.WriteLine("Invalid Token. The Length cannot be more than 27");
                 Token = Symbols.unknownt;
             }
         }
 
+        static void ProcessCommentToken()
+        {
+            GetNextChar();
+
+            if (ch == '/' || ch == '*')
+            {
+                while (ch != 10 && !reader.EndOfStream)
+                {
+                    GetNextChar();
+                }
+            }
+
+            Token = Symbols.whitespace;
+        }
         static void ProcessWordToken()
         {
             int length = 1;
 
-            while (ch >= 'A' && ch <= 'Z'|| ch >= 'a' && ch <= 'z' || ch >= '0' && ch <= '9')
+            while (ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z' || ch >= '0' && ch <= '9')
             {
                 length++;
                 Lexeme += ch.ToString();
@@ -183,7 +199,7 @@ namespace CSC446_Assignment_1_Nguyen
         }
         static void GetNextToken()
         {
-            while(ch <= 32)
+            while (ch <= 32)
             {
                 GetNextChar();
             }
@@ -221,12 +237,14 @@ namespace CSC446_Assignment_1_Nguyen
             else if (numOfDecimals == 1)
             {
                 ValueR = System.Convert.ToDouble(Lexeme);
-                Token = Symbols.floatt;
+                //Token = Symbols.floatt;
+                Token = Symbols.numt;
             }
             else
             {
                 Value = System.Convert.ToInt32(Lexeme);
-                Token = Symbols.integert;
+                //Token = Symbols.integert;
+                Token = Symbols.numt;
             }
         }
 
@@ -282,11 +300,13 @@ namespace CSC446_Assignment_1_Nguyen
 
             Console.Write("TOKEN: " + Token.ToString().PadRight(17, ' ') + "|  LEXEME: " + Lexeme.PadRight(19, ' '));
 
-            if (Token == Symbols.integert)
-                Console.Write("|  INT VALUE: " + Value);
-
-            else if (Token == Symbols.floatt)
-                Console.Write("|  REAL VALUE: " + ValueR);
+            if (Token == Symbols.numt)
+            {
+                if (Lexeme.Contains('.'))
+                    Console.Write("|  REAL VALUE: " + ValueR);
+                else
+                    Console.Write("|  INT VALUE: " + Value);
+            }
 
             else if (Token == Symbols.literal)
                 Console.Write("|  LITERAL VALUE: " + "\"" + ValueL + "\"");
@@ -299,7 +319,7 @@ namespace CSC446_Assignment_1_Nguyen
 
         static void ProcessSingleToken()
         {
-            
+
             if (Lexeme[0] == '<' || Lexeme[0] == '>' || Lexeme[0] == '=')
             {
                 Token = Symbols.relopt;
@@ -324,15 +344,15 @@ namespace CSC446_Assignment_1_Nguyen
             {
                 Token = Symbols.openCurlyParent;
             }
-            else if(Lexeme[0] == '}')
+            else if (Lexeme[0] == '}')
             {
                 Token = Symbols.closeCurlyParent;
             }
-            else if(Lexeme[0] == '[')
+            else if (Lexeme[0] == '[')
             {
                 Token = Symbols.openSquareParent;
             }
-            else if(Lexeme[0] == ']')
+            else if (Lexeme[0] == ']')
             {
                 Token = Symbols.closeSquareParent;
             }
@@ -378,256 +398,4 @@ namespace CSC446_Assignment_1_Nguyen
 
         }
     }
-    //class Program
-    //{
-    //    static int intgerToken; //interger token 
-    //    static string literalToken; //literal token 
-    //    static double realToken; //real token 
-    //    static string Lexeme;
-    //    static int line;
-    //    static Symbols Token;
-    //    static char temp;
-    //    static char character;
-    //    static int linetemp = 1;
-    //    static string[] reservedWords = { "if", "else", "while", "float", "int", "char", "break", "continue", "float", "void" };
-    //    public enum Symbols
-    //    {
-    //        thent, ift, elset, whilet, floatt, intt, chart, breakt, continuet, voidt, lparent, rparent, unknownt, eoftt, blanks,
-    //        literal
-    //    }
-
-    //    static string[] addop = { "+", "-", "||" };
-    //    static string[] mulop = { "*", "/", "%", "&&" };
-    //    static string[] assignop = { "=" };
-    //    static string[] brackets = { "(", ")", "{", "}", "[", "]", ",", ";", ".", "\"", };
-    //    static string[] relop = { "==", "!=", "<", "<=", ">", ">=" };
-
-    //    static StreamReader readingLines;
-
-    //    static void Main(string[] args)
-    //    {
-    //        string directory = Directory.GetCurrentDirectory() + "\\";
-    //        string fileName = "";
-
-    //    filecheck:
-    //        if (args.Length == 0)
-    //        {
-    //            do
-    //            {
-    //                Console.WriteLine("Enter in your c-- file name: ");
-    //                fileName = Console.ReadLine();
-
-    //            } while (string.IsNullOrWhiteSpace(fileName));
-    //        }
-
-    //        if (args.Length > 0 && File.Exists(directory + args[0]))
-    //        {
-    //            fileName = directory + args[0];
-    //        }
-
-    //        else if (File.Exists(directory + fileName))
-    //        {
-    //            fileName = directory + fileName;
-    //        }
-
-    //        else
-    //        {
-    //            Console.WriteLine("Error! File was not found!");
-    //            goto filecheck;
-    //        }
-
-
-    //        LexicalAnalyzer(fileName);
-    //        //while(Token != Symbols.eoftt || Lexeme == "\uffff")
-    //        //{
-    //        //    processToken();
-    //        //    displayToken();
-    //        //}
-
-    //        while(Token != Symbols.eoftt)
-    //        {
-    //            processToken();
-    //            displayToken();
-    //        }
-    //            System.Environment.Exit(0);
-
-
-
-    //        Console.WriteLine("Press any key to exit.");
-    //        System.Console.ReadKey();
-    //    }
-
-
-    //    /*Lexical Analyzer*/
-    //    static void LexicalAnalyzer(string fileName)
-    //    {
-    //        //Lexeme = File.ReadAllText(fileName);
-    //        ////Console.WriteLine(Lexeme);
-    //        readingLines = new StreamReader(fileName);
-    //        character = (char)readingLines.Read();
-           
-    //    }
-
-    //    static void processToken()
-    //    {
-    //       // Console.WriteLine("This is the processToken");
-
-    //        Lexeme = character.ToString();
-    //        //Console.WriteLine(Lexeme);
-
-    //        getNextChar(); // one character lookahead
-
-    //        if (Lexeme[0] >= 'A' && Lexeme[0] <= 'Z' || Lexeme[0] >= 'a' && Lexeme[0] <= 'z')
-    //        {
-    //            processWordToken();
-
-    //        }
-    //        else if (Lexeme[0] >= '0' && Lexeme[0] <= '9')
-    //        {
-    //            processNumToken();
-
-    //        }
-    //        else
-    //        {
-    //            processSingleToken();
-
-    //        }
-            
-    //    }
-
-    //    static void processWordToken()
-    //    {
-    //        //Console.WriteLine("This is processWordToken");
-
-    //        int wordlength = 1;
-
-    //        while (character >= 'A' && character <= 'Z' || character >= 'a' && character <= 'z' || character == '_')
-    //        {
-
-    //            wordlength++;
-    //            Lexeme += character.ToString();
-    //            Lexeme = Lexeme.ToLower();
-
-    //            getNextChar();
-    //        }
-
-
-    //        switch (Lexeme)
-    //        {
-    //            case "then":
-    //                Token = Symbols.thent;
-    //                break;
-    //            case "if":
-    //                Token = Symbols.ift;
-    //                break;
-    //            case "else":
-    //                Token = Symbols.elset;
-    //                break;
-    //            case "continue":
-    //                Token = Symbols.continuet;
-    //                break;
-    //            case "break":
-    //                Token = Symbols.breakt;
-    //                break;
-    //            case "char":
-    //                Token = Symbols.chart;
-    //                break;
-    //            case "float":
-    //                Token = Symbols.floatt;
-    //                break;
-    //            case "void":
-    //                Token = Symbols.voidt;
-    //                break;
-
-    //                //default:
-    //                //    Token = Symbols.unknownt;
-    //                //    break;
-
-    //        }
-
-    //        if (Lexeme.Length >= 27)
-    //        {
-    //            Console.WriteLine("Invalid name");
-    //        }
-
-    //    }
-
-    //    static void getNextChar()
-    //    {
-    //        if (character == 10)
-    //        {
-    //            linetemp++;
-    //        }
-    //        character = (char)readingLines.Read();
-    //        /*
-    //        Console.WriteLine("getting getNextChar");
-    //        do
-    //        {
-    //            temp = (char)readingLines.Read();
-    //            Console.WriteLine(temp);
-    //            line++;
-
-    //        } while (temp != ' ');
-
-    //        //return temp;
-    //        */
-    //    }
-
-    //    static void getNextToken()
-    //    {
-    //        while (character <= 32)
-    //        {
-    //            getNextChar();
-    //        }
-
-    //        if (!readingLines.EndOfStream)
-    //        {
-    //            processToken();
-    //        }
-
-    //        else
-    //        {
-    //            Token = Symbols.eoftt;
-    //        }
-
-
-    //    }
-
-
-    //    static void processNumToken()
-    //    {
-           
-    //    }
-
-    //    static void processSingleToken()
-    //    {
-
-    //    }
-
-    //    static void displayToken()
-    //    {
-    //        if (Token == Symbols.blanks)
-    //            return;
-
-    //        if (Token == Symbols.eoftt)
-    //            Lexeme = "eoft";
-
-    //        Console.Write("TOKEN: " + Token.ToString().PadRight(17, ' ') + "|  LEXEME: " + Lexeme.PadRight(19, ' '));
-
-    //        if (Token == Symbols.intt)
-    //            Console.Write("|  INT VALUE: ");
-    //        /*
-    //        else if (Token == Symbols.floatt)
-    //            Console.Write("|  REAL VALUE: " + RealValue);
-
-    //        else if (Token == Symbols.literal)
-    //            Console.Write("|  LITERAL VALUE: " + "\"" + LiteralValue + "\"");
-    //       */
-    //        else if (Token == Symbols.unknownt)
-    //            Console.Write(": ERROR UNKNOWN TOKEN");
-
-    //        Console.Write("\n");
-    //    }
-
-    //}
 }
