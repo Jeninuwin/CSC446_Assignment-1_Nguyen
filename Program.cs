@@ -90,19 +90,17 @@ namespace CSC446_Assignment_1_Nguyen
             {
                 ProcessNumToken();
             }
-            else if ((Lexeme[0] == '/' && (char)reader.Peek() == '*') || (Lexeme[0] == '/' && (char)reader.Peek() == '/') || (Lexeme[0] == '*' && (char)reader.Peek() == '/'))
+            else if(Lexeme[0] == '/' && ch == '*')
             {
-                //Token = Symbols.whitespace;
-                GetNextChar();
+                //ProcessCommentToken();
             }
             else if (Lexeme[0] == '"')
             {
                 ProcessLiteralToken();
-
             }
             else if (Lexeme[0] == '<' || Lexeme[0] == '>' || Lexeme[0] == ':')
             {
-                //ProcessDoubleToken();
+                ProcessDoubleToken();
             }
             else if (Lexeme[0] == ' ' || Lexeme[0] == '\r' || Lexeme[0] == '\t' || Lexeme[0] == '\n')
             {
@@ -120,19 +118,22 @@ namespace CSC446_Assignment_1_Nguyen
             }
         }
 
-        //static void ProcessCommentToken()
-        //{
-        //    GetNextChar();
+        static void ProcessCommentToken()
+        {
+            if (ch == '/' && (char)reader.Peek() == '*') //multi line 
+            {
+                while (ch != '*')
+                {
+                    while ((char)reader.Peek() != '/')
+                    {
+                        GetNextChar();
+                    }
+                }
+                GetNextChar();
+            }
 
-        //    if (ch == '/' || ch == '*')
-        //    {
-        //        while (ch != 10 && !reader.EndOfStream)
-        //        {
-        //            GetNextChar();
-        //        }
-
-        //    Token = Symbols.whitespace;
-        //}
+        }
+        
         static void ProcessWordToken()
         {
             int length = 1;
@@ -196,6 +197,7 @@ namespace CSC446_Assignment_1_Nguyen
             }
 
         }
+       
         static void GetNextToken()
         {
             while (ch <= 32)
@@ -236,13 +238,11 @@ namespace CSC446_Assignment_1_Nguyen
             else if (numOfDecimals == 1)
             {
                 ValueR = System.Convert.ToDouble(Lexeme);
-                //Token = Symbols.floatt;
                 Token = Symbols.numt;
             }
             else
             {
                 Value = System.Convert.ToInt32(Lexeme);
-                //Token = Symbols.integert;
                 Token = Symbols.numt;
             }
         }
@@ -318,26 +318,21 @@ namespace CSC446_Assignment_1_Nguyen
 
         static void ProcessSingleToken()
         {
-
             if (Lexeme[0] == '<' || Lexeme[0] == '>' || Lexeme[0] == '=')
             {
                 Token = Symbols.relopt;
-
             }
             else if (Lexeme[0] == '.')
             {
                 Token = Symbols.period;
-
             }
             else if (Lexeme[0] == '(')
             {
                 Token = Symbols.openParent;
-
             }
             else if (Lexeme[0] == ')')
             {
                 Token = Symbols.closeParent;
-
             }
             else if (Lexeme[0] == '{')
             {
@@ -358,12 +353,10 @@ namespace CSC446_Assignment_1_Nguyen
             else if (Lexeme[0] == ',')
             {
                 Token = Symbols.commat;
-
             }
             else if (Lexeme[0] == '+' || Lexeme[0] == '-' || Lexeme[0] == '|')
             {
                 Token = Symbols.addopt;
-
             }
             else if (Lexeme[0] == ':')
             {
@@ -373,27 +366,71 @@ namespace CSC446_Assignment_1_Nguyen
             else if (Lexeme[0] == ';')
             {
                 Token = Symbols.semit;
-
             }
             else if (Lexeme[0] == '"')
             {
                 Token = Symbols.quotet;
-
             }
             else if(Lexeme[0] == '&' || Lexeme[0] == '%' || Lexeme[0] == '*')
             {
                 Token = Symbols.mulopt;
             }
+            else if(Lexeme[0] == '=')
+            {
+                Token = Symbols.assignopt;
+            }
             else
             {
                 Token = Symbols.unknownt;
-
             }
         }
 
         static void ProcessDoubleToken()
         {
+            if (Lexeme[0] == '<' && ch == '=')
+            {
 
+                Lexeme = Lexeme[0].ToString() + ch.ToString();
+
+                Token = Symbols.relopt;
+                GetNextChar();
+
+            }
+
+            else if (Lexeme[0] == '>' && ch == '=')
+            {
+                Lexeme = Lexeme[0].ToString() + ch.ToString();
+                Token = Symbols.relopt;
+                GetNextChar();
+            }
+
+            else if (Lexeme[0] == '=' && ch == '=')
+            {
+                Lexeme = Lexeme[0].ToString() + ch.ToString();
+                Token = Symbols.relopt;
+                GetNextChar();
+            }
+
+            else if (Lexeme[0] == '!' && ch == '=')
+            {
+                Lexeme = Lexeme[0].ToString() + ch.ToString();
+                Token = Symbols.relopt;
+                GetNextChar();
+            }
+
+            else if (Lexeme[0] == '|' && ch == '|')
+            {
+                Lexeme = Lexeme[0].ToString() + ch.ToString();
+                Token = Symbols.addopt;
+                GetNextChar();
+            }
+
+            else if (Lexeme[0] == '&' && ch == '&')
+            {
+                Lexeme = Lexeme[0].ToString() + ch.ToString();
+                Token = Symbols.mulopt;
+                GetNextChar();
+            }
         }
     }
 }
