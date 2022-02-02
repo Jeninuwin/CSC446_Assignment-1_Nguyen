@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-
-namespace CSC446_Assignment_1_Nguyen
+﻿namespace CSC446_Assignment_1_Nguyen
 {
-    class Program
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+
+    /// <summary>
+    /// Defines the <see cref="Program" />.
+    /// </summary>
+    internal class Program
     {
         static string nameFile;
         static char ch;
@@ -13,32 +15,27 @@ namespace CSC446_Assignment_1_Nguyen
         public enum Symbols
         {
             thent, ift, elset, whilet, floatt, intt, chart, breakt, continuet, voidt, lparent, rparent, unknownt, eoftt, blanks,
-            literal, relopt, assignopt, addopt, mulopt, idt, integert, nott, whitespace,
-            semit,
-            quotet,
-            colont,
-            commat,
-            closeParent,
-            openParent,
-            period,
-            openCurlyParent,
-            closeCurlyParent,
-            openSquareParent,
-            closeSquareParent,
-            numt
+            literal, relopt, assignopt, addopt, mulopt, idt, integert, nott, whitespace, semit, quotet, colont, commat, closeParent, 
+            openParent, periodt, openCurlyParent, closeCurlyParent, openSquareParent, closeSquareParent, numt,
         }
         static Symbols Token;
         static string Lexeme;
         static int LineNo;
         // static int Value; //integer 
         static double ValueR; //real
-        static string ValueL;
+        static string ValueL; //literal
 
         public static List<string> reservedWords;
 
-        static void Main(string[] args)
+        /// <summary>
+        /// The Main.
+        /// </summary>
+        /// <param name="args">The args<see cref="string[]"/>.</param>
+        internal static void Main(string[] args)
         {
             reservedWords = new List<string> { "if", "else", "while", "float", "int", "char", "break", "continue", "float", "void" };
+
+        Redo:
 
             string file_dir = Directory.GetCurrentDirectory() + "\\";
 
@@ -58,10 +55,13 @@ namespace CSC446_Assignment_1_Nguyen
             else
             {
                 Console.WriteLine("ERROR: File not found.");
-                Environment.Exit(1);
+                goto Redo; //i know it's not stable but this is temporary 
             }
 
             readFile();
+            string empty = "";
+
+            Console.WriteLine("TOKEN: " + empty.PadRight(9, ' ') + "||  LEXEME: " + empty.PadRight(15, ' ') + "|| ATTRIBUTES: ");
 
             while (ch != 65535 || ch != '\uffff')
             {
@@ -69,39 +69,73 @@ namespace CSC446_Assignment_1_Nguyen
                 DisplayToken();
             }
 
+            string continueProgram;
+
+            cp:
+                Console.WriteLine("\nDo you want to enter another file? Enter Y for yes and N for to exit the program");
+                continueProgram = Console.ReadLine();
+
+                if (continueProgram.ToLower() == "n")
+                {
+                    System.Environment.Exit(0);
+                }
+                else if (continueProgram.ToLower() == "y")
+                {
+                    goto Redo;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid Response.");
+                    goto cp;
+                }
         }
 
-        static void readFile()
+        /// <summary>
+        /// The readFile will read within the file name given and insert it into ch, a character that acts like a list
+        /// </summary>
+        internal static void readFile()
         {
             reader = new StreamReader(nameFile);
             ch = (char)reader.Read();
         }
 
-        static void ProcessToken()
+        /// <summary>
+        /// The ProcessToken will sort out what lexeme or data is and call the appropriate process token 
+        /// </summary>
+        internal static void ProcessToken()
         {
             Lexeme = ch.ToString();
             GetNextChar(); //Look ahead
 
+            //if the lexeme has any letters, go to process word token
             if (Lexeme[0] >= 'A' && Lexeme[0] <= 'Z' || Lexeme[0] >= 'a' && Lexeme[0] <= 'z')
             {
                 ProcessWordToken();
             }
+            //if the lexeme has any numbers, go to process num token
             else if (Lexeme[0] >= '0' && Lexeme[0] <= '9')
             {
                 ProcessNumToken();
             }
+            //if the lexeme has / AND the character has * to create a comment i.e /* then go to process comment token
             else if (Lexeme[0] == '/' && ch == '*')
             {
                 ProcessCommentToken();
             }
+            //if the lexeme has a quotation then go to process literal token. This means it's a string of words
             else if (Lexeme[0] == '"')
             {
                 ProcessLiteralToken();
             }
-            else if (Lexeme[0] == '<' || Lexeme[0] == '>' || Lexeme[0] == ':')
+            //if lexeme has any of the symbols before then go to either process double token or single token 
+            else if (Lexeme[0] == '<' || Lexeme[0] == '>' || Lexeme[0] == ':' || Lexeme[0] == '!' || Lexeme[0] == '&' || Lexeme[0] == '|')
             {
-                ProcessDoubleToken();
+                if (ch == '=' || ch =='&' || ch=='|')
+                    ProcessDoubleToken();
+                else
+                    ProcessSingleToken();
             }
+            //if lexeme has any of the below, assign it as whitespace
             else if (Lexeme[0] == ' ' || Lexeme[0] == '\r' || Lexeme[0] == '\t' || Lexeme[0] == '\n')
             {
                 Token = Symbols.whitespace;
@@ -113,27 +147,34 @@ namespace CSC446_Assignment_1_Nguyen
 
             if (Lexeme.Length > 27)
             {
-                Console.WriteLine("Invalid Token. The Length cannot be more than 27");
+                Console.WriteLine("ERROR: Invalid Token. The Length cannot be more than 27.");
                 Token = Symbols.unknownt;
             }
         }
 
-        static void ProcessCommentToken()
+        /// <summary>
+        /// The ProcessCommentToken will convert the comment to be whitespace and will be ultimately ignored
+        /// </summary>
+        internal static void ProcessCommentToken()
         {
-            while (Lexeme[0] != '*' && ch != '/')
+            while (Lexeme[0] != '*' && ch != '/') //until it reached */ of the comment, it will continue to turn everything to whitespace
             {
                 GetNextChar();
             }
-            Token = Symbols.whitespace;
-            GetNextChar();
 
+            Token = Symbols.whitespace;
+
+            GetNextChar();
         }
-        
-        static void ProcessWordToken()
+
+        /// <summary>
+        /// The ProcessWordToken this will take the word and combine it togehter until there is a whitespace. Then it will assign the token to the correct symbol.
+        /// </summary>
+        internal static void ProcessWordToken()
         {
             int length = 1;
 
-            while (ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z' || ch >= '0' && ch <= '9')
+            while (ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z' || ch >= '0' && ch <= '9' || ch == '_')
             {
                 length++;
                 Lexeme += ch.ToString();
@@ -170,54 +211,25 @@ namespace CSC446_Assignment_1_Nguyen
                 case "void":
                     Token = Symbols.voidt;
                     break;
-                case "or":
-                    Token = Symbols.addopt;
-                    break;
-                case "rem":
-                    Token = Symbols.mulopt;
-                    break;
-                case "mod":
-                    Token = Symbols.mulopt;
-                    break;
-                case "and":
-                    Token = Symbols.mulopt;
-                    break;
-                case "not":
-                    Token = Symbols.nott;
-                    break;
                 default:
                     Token = Symbols.idt;
                     break;
 
             }
-
-        }
-       
-        static void GetNextToken()
-        {
-            while (ch <= 32)
-            {
-                GetNextChar();
-            }
-            if (!reader.EndOfStream)
-            {
-                ProcessToken();
-            }
-            else
-            {
-                Token = Symbols.eoftt;
-            }
         }
 
-        static void ProcessNumToken()
+        /// <summary>
+        /// The ProcessNumToken will process the numbers in the token. This will also sort out the decimals to be assigned as floats and the other numbers will be integers 
+        /// </summary>
+        internal static void ProcessNumToken()
         {
-            int numOfDecimals = 0;
+            int Decimals = 0;
 
-            while (ch >= '0' && ch <= '9' || (ch == '.' && numOfDecimals < 1))
+            while (ch >= '0' && ch <= '9' || (ch == '.' && Decimals < 1))
             {
                 if (ch == '.')
                 {
-                    numOfDecimals += 1;
+                    Decimals += 1;
                 }
 
                 Lexeme += ch;
@@ -227,10 +239,9 @@ namespace CSC446_Assignment_1_Nguyen
             if (Lexeme[Lexeme.Length - 1] == '.')
             {
                 Token = Symbols.unknownt;
-                Console.WriteLine("ERROR LINE " + LineNo + ": MALFORMED TOKEN");
-                return;
+                Console.WriteLine("ERROR: On line" + LineNo + "contains an error");
             }
-            else if (numOfDecimals == 1)
+            else if (Decimals == 1)
             {
                 ValueR = System.Convert.ToDouble(Lexeme);
                 Token = Symbols.numt;
@@ -242,14 +253,20 @@ namespace CSC446_Assignment_1_Nguyen
             }
         }
 
-        static void GetNextChar()
+        /// <summary>
+        /// The GetNextChar takes a look at the next character and stores it into the character ch to be used later
+        /// </summary>
+        internal static void GetNextChar()
         {
             if (ch == 10)
                 LineNo++;
             ch = (char)reader.Read();
-
         }
-        static void ProcessLiteralToken()
+
+        /// <summary>
+        /// The ProcessLiteralToken this will process the strings that are surrounded in the quotations and make sure that it is a string, if it does not end with an ending quotation, it will throw an error
+        /// </summary>
+        internal static void ProcessLiteralToken()
         {
             bool hasEnding = false;
             ValueL = "";
@@ -272,7 +289,7 @@ namespace CSC446_Assignment_1_Nguyen
             if (!hasEnding)
             {
                 Token = Symbols.unknownt;
-                Console.WriteLine("ERROR LINE " + LineNo + ": incomplete literal, missing closing");
+                Console.WriteLine("ERROR: On the line " + LineNo + " it is an incomplete literal");
             }
             else
             {
@@ -280,152 +297,198 @@ namespace CSC446_Assignment_1_Nguyen
             }
         }
 
-        public static int? Value { get; set; } = null; //this resets the value not sure if this is needed but can remove?
+        /// <summary>
+        /// Gets or sets the Value.
+        /// </summary>
+        public static int? Value { get; set; } = null;//this resets the value not sure if this is needed but can remove?
 
-        static void DisplayToken()
+        /// <summary>
+        /// The DisplayToken will display on the console what the results are
+        /// </summary>
+        internal static void DisplayToken()
         {
+
             if (Token == Symbols.whitespace)
+            {
                 return;
+            }
 
             if (Token == Symbols.eoftt)
             {
                 Lexeme = "eoft";
             }
 
-            Console.Write("TOKEN: " + Token.ToString().PadRight(17, ' ') + "|  LEXEME: " + Lexeme.PadRight(19, ' '));
+            Console.Write(Token.ToString().PadRight(22, ' ') + Lexeme.ToString().PadRight(20, ' '));
 
             if (Token == Symbols.numt)
             {
                 if (Lexeme.Contains('.'))
-                    Console.Write("|  REAL VALUE: " + ValueR);
+                    Console.Write("|| REAL NUM VALUE: " + ValueR);
                 else
-                    Console.Write("|  INT VALUE: " + Value);
+                    Console.Write("|| INT NUM VALUE: " + Value);
             }
 
             else if (Token == Symbols.literal)
-                Console.Write("|  LITERAL VALUE: " + "\"" + ValueL + "\"");
+                Console.Write("|| LITERAL VALUE: " + "\"" + ValueL + "\"");
 
             else if (Token == Symbols.unknownt)
-                Console.Write(": ERROR UNKNOWN TOKEN");
+                Console.Write("ERROR: Token is unknown");
 
             Console.Write("\n");
         }
 
-        static void ProcessSingleToken()
+        /// <summary>
+        /// The ProcessSingleToken will process any alone symbols and assign them the correct symbol
+        /// </summary>
+        internal static void ProcessSingleToken()
         {
-            if (Lexeme[0] == '<' || Lexeme[0] == '>' || Lexeme[0] == '=')
+            switch (Lexeme)
             {
-                Token = Symbols.relopt;
-            }
-            else if (Lexeme[0] == '.')
-            {
-                Token = Symbols.period;
-            }
-            else if (Lexeme[0] == '(')
-            {
-                Token = Symbols.openParent;
-            }
-            else if (Lexeme[0] == ')')
-            {
-                Token = Symbols.closeParent;
-            }
-            else if (Lexeme[0] == '{')
-            {
-                Token = Symbols.openCurlyParent;
-            }
-            else if (Lexeme[0] == '}')
-            {
-                Token = Symbols.closeCurlyParent;
-            }
-            else if (Lexeme[0] == '[')
-            {
-                Token = Symbols.openSquareParent;
-            }
-            else if (Lexeme[0] == ']')
-            {
-                Token = Symbols.closeSquareParent;
-            }
-            else if (Lexeme[0] == ',')
-            {
-                Token = Symbols.commat;
-            }
-            else if (Lexeme[0] == '+' || Lexeme[0] == '-' || Lexeme[0] == '|')
-            {
-                Token = Symbols.addopt;
-            }
-            else if (Lexeme[0] == ':')
-            {
-                Token = Symbols.colont;
+                case "<":
+                case ">":
+                case "=":
+                    {
+                        Token = Symbols.relopt;
+                        break;
+                    }
+                case ".":
+                    {
+                        Token = Symbols.periodt;
+                        break;
+                    }
+                case "(":
+                    {
+                        Token = Symbols.openParent;
+                        break;
+                    }
+                case ")":
+                    {
+                        Token = Symbols.closeParent;
+                        break;
+                    }
+                case "{":
+                    {
+                        Token = Symbols.openCurlyParent;
+                        break;
+                    }
+                case "}":
+                    {
+                        Token = Symbols.closeCurlyParent;
+                        break;
+                    }
+                case "[":
+                    {
+                        Token = Symbols.openSquareParent;
+                        break;
+                    }
+                case "]":
+                    {
+                        Token = Symbols.closeSquareParent;
+                        break;
+                    }
+                case ",":
+                    {
+                        Token = Symbols.commat;
+                        break;
+                    }
+                case "+":
+                case "-":
+                case "|":
+                    {
+                        Token = Symbols.addopt;
+                        break;
+                    }
+                case ":":
+                    {
+                        Token = Symbols.colont;
+                        break;
+                    }
+                case ";":
+                    {
+                        Token = Symbols.semit;
+                        break;
+                    }
+                case "\"\"":
+                    {
+                        Token = Symbols.quotet;
+                        break;
+                    }
+                case "&":
+                case "%":
+                case "*":
+                case "/":
+                    {
+                        Token = Symbols.mulopt;
+                        break;
+                    }
+                default:
+                    {
+                        Token = Symbols.unknownt;
+                        break;
+                    }
 
-            }
-            else if (Lexeme[0] == ';')
-            {
-                Token = Symbols.semit;
-            }
-            else if (Lexeme[0] == '"')
-            {
-                Token = Symbols.quotet;
-            }
-            else if(Lexeme[0] == '&' || Lexeme[0] == '%' || Lexeme[0] == '*')
-            {
-                Token = Symbols.mulopt;
-            }
-            else if(Lexeme[0] == '=')
+            };
+
+            if (Lexeme[0] == '=')
             {
                 Token = Symbols.assignopt;
             }
-            else
-            {
-                Token = Symbols.unknownt;
-            }
         }
 
-        static void ProcessDoubleToken()
+        /// <summary>
+        /// The ProcessDoubleToken will take any symbols that belong together and assign them a symbol
+        /// </summary>
+        internal static void ProcessDoubleToken()
         {
-            if (Lexeme[0] == '<' && ch == '=')
+            Lexeme += ch;
+
+            switch (Lexeme)
             {
+                case "<=":
+                    {
+                        Lexeme = Lexeme[0].ToString() + ch.ToString();
 
-                Lexeme = Lexeme[0].ToString() + ch.ToString();
+                        Token = Symbols.relopt;
+                        GetNextChar();
+                        break;
+                    }
+                case ">=":
+                    {
+                        Lexeme = Lexeme[0].ToString() + ch.ToString();
+                        Token = Symbols.relopt;
+                        GetNextChar();
+                        break;
+                    }
+                case "==":
+                    {
+                        Lexeme = Lexeme[0].ToString() + ch.ToString();
+                        Token = Symbols.relopt;
+                        GetNextChar();
+                        break;
+                    }
+                case "!=":
+                    {
+                        Lexeme = Lexeme[0].ToString() + ch.ToString();
+                        Token = Symbols.relopt;
+                        GetNextChar();
+                        break;
+                    }
+                case "||":
+                    {
+                        Lexeme = Lexeme[0].ToString() + ch.ToString();
+                        Token = Symbols.addopt;
+                        GetNextChar();
+                        break;
+                    }
+                case "&&":
+                    {
+                        Lexeme = Lexeme[0].ToString() + ch.ToString();
+                        Token = Symbols.mulopt;
+                        GetNextChar();
+                        break;
+                    }
+            };
 
-                Token = Symbols.relopt;
-                GetNextChar();
-
-            }
-
-            else if (Lexeme[0] == '>' && ch == '=')
-            {
-                Lexeme = Lexeme[0].ToString() + ch.ToString();
-                Token = Symbols.relopt;
-                GetNextChar();
-            }
-
-            else if (Lexeme[0] == '=' && ch == '=')
-            {
-                Lexeme = Lexeme[0].ToString() + ch.ToString();
-                Token = Symbols.relopt;
-                GetNextChar();
-            }
-
-            else if (Lexeme[0] == '!' && ch == '=')
-            {
-                Lexeme = Lexeme[0].ToString() + ch.ToString();
-                Token = Symbols.relopt;
-                GetNextChar();
-            }
-
-            else if (Lexeme[0] == '|' && ch == '|')
-            {
-                Lexeme = Lexeme[0].ToString() + ch.ToString();
-                Token = Symbols.addopt;
-                GetNextChar();
-            }
-
-            else if (Lexeme[0] == '&' && ch == '&')
-            {
-                Lexeme = Lexeme[0].ToString() + ch.ToString();
-                Token = Symbols.mulopt;
-                GetNextChar();
-            }
         }
     }
 }
