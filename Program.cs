@@ -90,10 +90,10 @@ namespace CSC446_Assignment_1_Nguyen
             {
                 ProcessNumToken();
             }
-            else if (Lexeme[0] == '/')
+            else if ((Lexeme[0] == '/' && (char)reader.Peek() == '*') || (Lexeme[0] == '/' && (char)reader.Peek() == '/') || (Lexeme[0] == '*' && (char)reader.Peek() == '/'))
             {
-                ProcessCommentToken();
-                GetNextToken();
+                //Token = Symbols.whitespace;
+                GetNextChar();
             }
             else if (Lexeme[0] == '"')
             {
@@ -120,20 +120,19 @@ namespace CSC446_Assignment_1_Nguyen
             }
         }
 
-        static void ProcessCommentToken()
-        {
-            GetNextChar();
+        //static void ProcessCommentToken()
+        //{
+        //    GetNextChar();
 
-            if (ch == '/' || ch == '*')
-            {
-                while (ch != 10 && !reader.EndOfStream)
-                {
-                    GetNextChar();
-                }
-            }
+        //    if (ch == '/' || ch == '*')
+        //    {
+        //        while (ch != 10 && !reader.EndOfStream)
+        //        {
+        //            GetNextChar();
+        //        }
 
-            Token = Symbols.whitespace;
-        }
+        //    Token = Symbols.whitespace;
+        //}
         static void ProcessWordToken()
         {
             int length = 1;
@@ -361,12 +360,7 @@ namespace CSC446_Assignment_1_Nguyen
                 Token = Symbols.commat;
 
             }
-            else if (Lexeme[0] == '+')
-            {
-                Token = Symbols.addopt;
-
-            }
-            else if (Lexeme[0] == '-')
+            else if (Lexeme[0] == '+' || Lexeme[0] == '-' || Lexeme[0] == '|')
             {
                 Token = Symbols.addopt;
 
@@ -385,6 +379,10 @@ namespace CSC446_Assignment_1_Nguyen
             {
                 Token = Symbols.quotet;
 
+            }
+            else if(Lexeme[0] == '&' || Lexeme[0] == '%' || Lexeme[0] == '*')
+            {
+                Token = Symbols.mulopt;
             }
             else
             {
