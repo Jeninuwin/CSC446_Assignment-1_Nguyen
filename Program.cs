@@ -90,9 +90,9 @@ namespace CSC446_Assignment_1_Nguyen
             {
                 ProcessNumToken();
             }
-            else if(Lexeme[0] == '/' && ch == '*')
+            else if (Lexeme[0] == '/' && ch == '*')
             {
-                //ProcessCommentToken();
+                ProcessCommentToken();
             }
             else if (Lexeme[0] == '"')
             {
@@ -120,17 +120,12 @@ namespace CSC446_Assignment_1_Nguyen
 
         static void ProcessCommentToken()
         {
-            if (ch == '/' && (char)reader.Peek() == '*') //multi line 
+            while (Lexeme[0] != '*' && ch != '/')
             {
-                while (ch != '*')
-                {
-                    while ((char)reader.Peek() != '/')
-                    {
-                        GetNextChar();
-                    }
-                }
                 GetNextChar();
             }
+            Token = Symbols.whitespace;
+            GetNextChar();
 
         }
         
